@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+	<title>Hobbit Day 2024</title>
+	<link rel="icon" type="image/x-icon" href="/favicon.ico"></link>
+
+</head>
+<style>
+@font-face {
+  font-family: "Ringbearer";
+  src: url(/RingbearerMedium-51mgZ.ttf) format("truetype");
+}
+* {
+  font-family: Ringbearer;
+}
+
+button {
+  font-size: 2em;
+  margin: 1vh 2vw;
+}
+body, input {
+  text-align: center;
+  font-size: 2em;
+  max-width: 100%;
+}
+.content, .race-select {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction:column;
+  justify-content:center;
+  text-align: center;
+}
+.fact, .tree, .stars {
+	border: 1px gray solid;
+	border-radius: 5px;
+	padding: 2vw;
+	margin: 2vw;
+	font-size: 1em;
+}
+.selected {
+       background-color: #e0e0ff;
+}
+</style>
+<body>
+ <div class="content">
+        <div class="race-select">
+	<h1>
+	  Select your race
+	</h1>
+	<button>Human</button>
+	<button>Dwarf</button>
+	<button>Hobbit</button>
+	<button>Elf</button>
+	<button>Ent</button>
+	</div>
+
+	<h1 class="selection"></h1>
+
+	<div class="human prompt" style="display:none;">
+	  <h2>Enter your first name</h2>
+	  <input id="fname" type="text"/>
+	  <h2>Enter your last name</h2>
+	  <input id="lname" type="text"/>
+	  <button id="submit">Submit</button>
+	</div>
+	<div class="dwarf prompt" style="display:none;">
+	  <h2>What is your most favorite rock fact?</h2>
+	  <div id="facts1"></div>
+	  <h2>What is your second most favorite rock fact?</h2>
+	  <div id="facts2"></div>
+	  <button id="submit">Submit</button>
+	</div>
+	<div class="hobbit prompt" style="display:none;">
+		<h2>What month were you born?</h2>
+		<input type="number" id="bmonth" name="bmonth" min="1" max="12"/>
+		<h2>What day were you born?</h2>
+		<input type="number" id="bday" name="bday" min="1" max="31"/>
+		<button id="submit">Submit</button>
+	</div>
+	<div class="elf prompt" style="display:none;">
+		<h2>What is your star sign?</h2>
+		<div id="starsign"></div>
+		<h2>What was the phase of the moon at the time of your birth?</h2>
+		<div id="lunarphase"></div>
+		<button id="submit">Submit</button>
+	</div>
+	<div class="ent prompt" style="display:none;">
+		<h2>What is your favorite type of tree?</h2>
+		<div id="trees1"></div>
+		<h2>What is your least favorite type of tree?</h2>
+		<div id="trees2"></div>
+		<button id="submit">Submit</button>
+	</div>
+  </div>
+</body>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+
+	function handle_data(data, race) {
+		console.log(data, race);
+		let lines = data.split("\n");
+		let header = lines.shift().split(",");
+		console.log(header);
+		let result = [];
+		for (let line of lines) {
+			let vals = line.split(",");
+			let r = {};
+			for (let i = 0; i < vals.length; i++) {
+				r[header[i].trim()] = vals[i].trim();
+			}
+			result.push(r);
+		}
+		console.log(result);
+
+
+		switch(race) {
+		  case 'dwarf':
+			handle_dwarf(result);
+		  case 'hobbit':
+			handle_hobbit(result);
+		  case 'elf':
+			handle_elf(result);
+		  case 'ent':
+			handle_ent(result);
+		}
+	}
+
+	function handle_dwarf(recs) {
+	  let facts = recs.map((r) => r['Rock fact']);
+	  let mapping = recs.map((r) => [r['Rock fact'], r['Dwarf name']]);
+		console.log(mapping);
+	  mapping = Object.fromEntries(new Map(mapping));
+		console.log(mapping);
+	  let f1 = $("#facts1");
+	  let f2 = $("#facts2");
+	  for (let f of facts) {
+		  let c = "<div class=\"fact\">" + f + "</div>";
+		f1.append(c);
+		f2.append(c);
+	  }
+	  $(".fact").click((event) => {
+		let e = $(event.target);
+		e.parent().children(".fact").removeClass("selected");
+		e.addClass("selected");
+		console.log("added");
+	  });
+	  $(".dwarf #submit").click(() => {
+		let f1 = $("#facts1 .selected").text().trim();
+		let f2 = $("#facts2 .selected").text().trim();
+		console.log(f1)
+		console.log(f2);
+		alert(`Your Dwarf name is: ${mapping[f1]} heir of ${mapping[f2]}`);
+		window.location.reload();
+	  });
+	}
+
+	function handle_hobbit(recs) {
+	  let fname = recs.map((r) => r['First Name']);
+	  let lname = recs.map((r) => r['Last Name']);
+	  console.log(fname);
+	  console.log(lname);
+	  $(".hobbit #submit").click(() => {
+		let bmonth = $("#bmonth").val();
+		let bday = $("#bday").val();
+		console.log(bmonth)
+		console.log(bday);
+		alert(`Your Hobbit name is: ${fname[bday]} ${lname[bmonth]}`);
+		window.location.reload();
+	  });
+	}
+
+	function handle_elf(recs) {
+	  let name = recs.map((r) => r['Name']);
+	  let lunarphase = recs.map((r) => r['Lunar Phase']).filter((r) => r.trim()!="");
+	  let starsign = recs.map((r) => r['Star Sign']).filter((r) => r.trim()!="");
+	  console.log(name);
+	  console.log(lunarphase);
+	  console.log(starsign);
+	  let lp = $("#lunarphase");
+	  let ss = $("#starsign");
+	  for (let s of starsign) {
+		  let c = "<div class=\"stars\">" + s + "</div>";
+		ss.append(c);
+	  }
+	  for (let l of lunarphase) {
+		  let c = "<div class=\"stars\">" + l + "</div>";
+		lp.append(c);
+	  }
+	  $(".stars").click((event) => {
+		let e = $(event.target);
+		e.parent().children(".stars").removeClass("selected");
+		e.addClass("selected");
+		console.log("added");
+	  });
+	  $(".elf #submit").click(() => {
+		let strs = starsign.indexOf($("#starsign .selected").text().trim());
+		let lunpha = lunarphase.indexOf($("#lunarphase .selected").text().trim());
+		let sl = strs + lunpha
+		
+		console.log(sl)
+		alert(`Your elf name is: ${name[sl%name.length]}`);
+		window.location.reload();
+	  });
+	}
+	
+
+String.prototype.hashCode = function() {
+  var hash = 0,
+    i, chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr = this.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+	function handle_ent(recs) {
+	  let trees = recs.map((r) => r['Tree']);
+	  let prefix = recs.map((r) => r['Prefix']).filter((r) => r.trim()!="");
+	  let suffix = recs.map((r) => r['Suffix']).filter((r) => r.trim()!="");
+	  let t1 = $("#trees1");
+	  let t2 = $("#trees2");
+	  for (let t of trees) {
+		  let c = "<div class=\"tree\">" + t + "</div>";
+		t1.append(c);
+		t2.append(c);
+	  }
+	  $(".tree").click((event) => {
+		let e = $(event.target);
+		e.parent().children(".tree").removeClass("selected");
+		e.addClass("selected");
+		console.log("added");
+	  });
+	  $(".ent #submit").click(() => {
+		let t1 = $("#trees1 .selected").text().trim();
+		let t2 = $("#trees2 .selected").text().trim();
+		console.log(t1)
+		console.log(t2);
+		t1index = trees.indexOf(t1)
+		t2index = trees.indexOf(t2)
+		alert(`Your Ent name is: ${prefix[t1index%prefix.length]}${suffix[t2index%suffix.length]}`);
+		window.location.reload();
+	  });
+	}
+	$(".race-select button").click(function(e) {
+		console.log(e);
+		let race = $(e.currentTarget).text();
+		$(".race-select").hide();
+		$('.prompt').hide();
+		$(`.${race.toLowerCase()}.prompt`).show();
+		$(".selection").text("You have selected: " + race);
+
+		let URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS3j-_w3AEdn87V9KeLYoOqM9Jxh3K54EZ030nIBk9vFsdNitXVtutZ8yIRMdy0Pw6iZR8TRZeRc5Do/pub?single=true&output=csv"
+		const GIDS = {
+		  dwarf: "1838929237",
+		  elf: "1244426565",
+		  hobbit: "0",
+		  ent: "1635929766",
+		}
+		let gid = GIDS[race.toLowerCase()];
+		if (gid) {
+			$.get(URL_BASE + "&gid=" + gid).then((data) => handle_data(data, race.toLowerCase()));
+		}
+	});
+	$(".human #submit").click(function() {
+		alert("Your human name is: " + $("#fname").val() + " " + $("#lname").val());
+		$("#fname,#lname").val("");
+		window.location.reload();
+	});
+
+
+</script>
+</html>
